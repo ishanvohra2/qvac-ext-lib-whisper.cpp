@@ -1,0 +1,5 @@
+# Engine-native GGUFs are staged locally and are never committed.
+models/
+
+# Generated manifests, raw measurements, reports, and optional FLEURS data.
+out/

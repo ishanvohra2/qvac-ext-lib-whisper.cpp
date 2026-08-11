@@ -217,6 +217,12 @@ Benchmark timing (transcript printed once after stats):
   --wav test/samples/jfk.wav --bench --bench-runs 15 --bench-warmup 5
 ```
 
+For reproducible, direct engine-to-engine measurements against
+`mudler/parakeet.cpp`, see
+[`benchmarks/comparison/README.md`](benchmarks/comparison/README.md). The
+harness invokes both C++ CLIs directly and does not include an addon or SDK
+layer in the measured path.
+
 ### 3.2 Example programs (microphone)
 
 Enable with **`cmake -DPARAKEET_BUILD_EXAMPLES=ON`**. Produces **`live-mic`** and **`live-mic-attributed`** next to **`parakeet`**. They use **[miniaudio](https://miniaud.io/)** (`examples/miniaudio.h`, capture at **16 kHz mono**). **macOS** prompts for microphone permission on first run; stop with **Ctrl-C** (tail audio is flushed).
