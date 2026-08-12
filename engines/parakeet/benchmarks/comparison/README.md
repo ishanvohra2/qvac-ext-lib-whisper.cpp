@@ -182,6 +182,7 @@ Outputs:
 | `PARAKEET_FLEURS_GPU` | `true` | Set to `false` for a CPU-only FLEURS run |
 | `PARAKEET_FLEURS_MANIFEST` | `out/fleurs/manifest.json` | Override the FLEURS manifest |
 | `PARAKEET_FLEURS_ONLY` | unset | Set to `1` as an alias for `--fleurs-only` |
+| `PARAKEET_FLEURS_FORCE_QVAC` | unset | Set to `1` to ignore cached QVAC utterance results |
 | `PARAKEET_ALLOW_BACKEND_MISMATCH` | unset | Set to `1` to allow and label a mismatch |
 
 Backward aliases `QVAC_PARAKEET_CLI`, `MUDLER_PARAKEET_DIR`, and
@@ -238,7 +239,8 @@ fresh process's backend initialization in the timed sample. Mudler loads TDT
 once, performs its built-in untimed warmup, and processes the same manifest
 once. Both reported timings exclude model loading and WAV reading. Valid QVAC
 per-utterance JSON is reused after an interrupted run when the model, WAV,
-threads, GPU setting, and backend still match.
+threads, GPU setting, and backend still match. Set
+`PARAKEET_FLEURS_FORCE_QVAC=1` when a fresh QVAC run is required.
 
 To fetch a smaller development subset:
 

@@ -153,6 +153,7 @@ function makeConfig () {
     outDir: path.resolve(process.env.PARAKEET_COMPARE_OUT_DIR || OUT_DIR),
     fleursManifest: path.resolve(process.env.PARAKEET_FLEURS_MANIFEST || FLEURS_MANIFEST),
     fleursUseGpu: process.env.PARAKEET_FLEURS_GPU !== 'false',
+    fleursForceQvac: process.env.PARAKEET_FLEURS_FORCE_QVAC === '1',
     models: modelNames,
     runs: integerEnv('PARAKEET_COMPARE_RUNS', 5),
     warmups: 1,
@@ -205,6 +206,7 @@ Primary environment variables:
   PARAKEET_COMPARE_MODELS, PARAKEET_COMPARE_RUNS, PARAKEET_COMPARE_THREADS
   PARAKEET_COMPARE_GPU=true|false, PARAKEET_COMPARE_OUT_DIR
   PARAKEET_FLEURS_GPU=false, PARAKEET_FLEURS_MANIFEST, PARAKEET_FLEURS_ONLY=1
+  PARAKEET_FLEURS_FORCE_QVAC=1
   PARAKEET_ALLOW_BACKEND_MISMATCH=1
 `)
 }
@@ -412,7 +414,7 @@ function runFleursQvac (config, manifest) {
   for (const item of manifest) {
     const output = path.join(outputDir, `${safeName(item.id)}.json`)
     let data = fs.existsSync(output) ? JSON.parse(fs.readFileSync(output, 'utf8')) : null
-    const cacheMatches = data &&
+    const cacheMatches = !config.fleursForceQvac && data &&
       path.resolve(data.model) === path.resolve(modelPath) &&
       path.resolve(data.wav) === path.resolve(item.wav) &&
       data.threads === config.threads &&
