@@ -38,6 +38,7 @@ engines/parakeet/benchmarks/comparison/
   fleurs-results.js
   fleurs-results.test.js
   architecture.md
+  ios/                    # signed physical-device app carriers and host wrappers
   reports/                # committed platform reports and supplied raw data
     <target>/
       verification-report.md
@@ -50,6 +51,9 @@ engines/parakeet/benchmarks/comparison/
 ```
 
 The legacy `qvac-bench.js` addon driver is intentionally not present.
+Physical iOS CPU/Metal runs use the separate signed app carriers documented in
+[`ios/README.md`](ios/README.md). The physical iPhone 16 results are under
+[`reports/ios-iphone16/`](reports/ios-iphone16/).
 
 All platform verification reports use the same ten-section schema and the
 `reports/<target>/verification-report.md` naming convention. Raw FLEURS files

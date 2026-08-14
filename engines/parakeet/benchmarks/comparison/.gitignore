@@ -3,3 +3,7 @@ models/
 
 # Generated manifests, raw measurements, reports, and optional FLEURS data.
 out/
+out-ios/
+
+# Generated physical-device Xcode build trees.
+ios/build/

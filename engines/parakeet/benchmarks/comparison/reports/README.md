@@ -36,10 +36,14 @@ timings, WER, RTF, and backend metadata.
 | NVIDIA RTX 3080 | [`nvidia-rtx3080/verification-report.md`](nvidia-rtx3080/verification-report.md) | Not supplied |
 | AMD Strix / Radeon 8060S | [`amd-strix/verification-report.md`](amd-strix/verification-report.md) | CPU and Vulkan |
 | Android / Adreno 740 | [`android-adreno740/verification-report.md`](android-adreno740/verification-report.md) | Not supplied |
+| iPhone 16 / Apple A18 | [`ios-iphone16/verification-report.md`](ios-iphone16/verification-report.md) | CPU and Metal |
 
 The NVIDIA and Android reports reference logs, probes, and raw FLEURS data that
 were not included in the handoff. Their reports preserve that limitation rather
 than synthesizing missing files.
+
+The signed physical-device harness for `ios-iphone16` is documented in
+[`../ios/README.md`](../ios/README.md).
 
 ## Interpretation rule
 
