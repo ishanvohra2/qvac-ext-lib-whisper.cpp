@@ -1,4 +1,4 @@
-# Parakeet engine comparison on NVIDIA — verification report
+# Parakeet engine comparison: NVIDIA RTX 3080
 
 Verification of the NVIDIA hand-off in
 [`tmp-parakeet-engine-comparison-v2`](https://github.com/ishanvohra2/qvac-ext-lib-whisper.cpp/tree/tmp-parakeet-engine-comparison-v2)
@@ -6,7 +6,7 @@ Verification of the NVIDIA hand-off in
 The measured path contains only the two engine CLIs — no addon, Bare, SDK, or
 `packages/asr-ggml`.
 
-## Verdict
+## 1. Verdict
 
 **The setup reproduces.** Both Vulkan CLIs build clean and the matched
 Vulkan-vs-Vulkan comparison ran end to end over 300 FLEURS utterances. One
@@ -29,12 +29,12 @@ QVAC's OpenCL backend refuses non-Adreno GPUs by design.
 
 ---
 
-## 1. What was run
+## 2. Run matrix
 
 | # | Run | Status |
 |---|---|---|
 | 1 | **Vulkan vs Vulkan** — matched, the valid engine comparison | Completed |
-| 2 | **QVAC OpenCL vs mudler Vulkan** — optional diagnostic | **Impossible on NVIDIA** (§3) |
+| 2 | **QVAC OpenCL vs mudler Vulkan** — optional diagnostic | **Impossible on NVIDIA** (§4) |
 | 3 | **CPU vs CPU** — baseline added beyond `instructions.md` | Completed |
 | 4 | **mudler ggml CPU-patch ablation** — controlled A/B, added | Completed |
 
@@ -44,7 +44,7 @@ reused byte-for-byte across all runs.
 
 ---
 
-## 2. Results
+## 3. Results
 
 | Backend | Engine | Corpus WER | Mean RTF | Median RTF |
 |---|---|---:|---:|---:|
@@ -158,7 +158,7 @@ Per-language tables: `artifacts/fleurs-report-linux-x64-{vulkan,cpu}.md`.
 
 ---
 
-## 3. The OpenCL diagnostic cannot be produced on NVIDIA
+## 4. Platform constraints
 
 `instructions.md` asks for a `QVAC OpenCL vs mudler Vulkan` diagnostic and says to
 treat a failure to initialize as a result to report. That is what happened.
@@ -200,7 +200,7 @@ Vulkan and CUDA.
 
 ---
 
-## 4. Deviations from `instructions.md`
+## 5. Methodology and deviations
 
 One deviation, changing no functionality or logic:
 
@@ -214,7 +214,7 @@ both trees built clean under cmake 4.3.2 / g++ 15.2.1 with no patches.
 
 ---
 
-## 5. Findings
+## 6. Findings
 
 | ID | Finding | Severity |
 |---|---|---|
@@ -231,7 +231,7 @@ both trees built clean under cmake 4.3.2 / g++ 15.2.1 with no patches.
 `download-all-models.sh`, while `test-package-consumption.sh` beside them is
 `100755`. Fix: `git update-index --chmod=+x` on both.
 
-**F2** — see §3. `instructions.md` presents the OpenCL run as optional-but-attemptable
+**F2** — see §4. `instructions.md` presents the OpenCL run as optional-but-attemptable
 and asks the reader to record the OpenCL device, implying it can work. Fix: state
 the Adreno-only constraint in the scope section, or drop it from the NVIDIA hand-off.
 
@@ -248,7 +248,7 @@ publish the QVAC q8_0 GGUF, or record its expected checksum.
 applying 4 patches to its ggml submodule. `0001-ggml-cpu-fold-broadcast-iterations-in-llamafile_sgem.patch`
 changes the **CPU** `mul_mat` path; the other three are Metal/CUDA-only, so the
 Vulkan comparison is unaffected. **Ablation shows this patch is inert for this
-workload** (§2, 0.2% — within noise), so it does not compromise the CPU baseline
+workload** (§3, 0.2% — within noise), so it does not compromise the CPU baseline
 either. Worth knowing it exists, but it changes nothing here.
 
 **F5** — both engines drive `ggml_backend_sched` (QVAC `src/parakeet_ctc.cpp:954`,
@@ -270,7 +270,7 @@ miss. Fix: capture and assert mudler's `pk::Backend using device: <dev>` line.
 *(For this run, mudler's Vulkan use is corroborated: the identical command printed
 `Vulkan0` in the smoke test, and its CPU run is 7.9× slower.)*
 
-**F8** — see §2(b). The highest-impact finding: on GPU the harness's timing
+**F8** — see §3(b). The highest-impact finding: on GPU the harness's timing
 methodology carries a bias (up to 1.35×) *larger* than the difference it is being
 used to measure (1.26×), and the bias favours QVAC. Measured on CPU the same bias
 is only ~1.04×, so the CPU comparison is unaffected — this invalidates the GPU
@@ -280,7 +280,7 @@ twice and read the second pass, so both engines report steady-state.
 
 ---
 
-## 6. Suggested follow-up
+## 7. Follow-up
 
 1. **Fix F8 before quoting any GPU speed number.** As it stands the harness can
    establish accuracy parity but not a GPU speed winner.
@@ -289,7 +289,7 @@ twice and read the second pass, so both engines report steady-state.
    non-OpenCL GPU device from the ggml registry, which includes CUDA when built
    with `GGML_CUDA=ON`. Whether CUDA beats Vulkan here was **not measured**.
 3. **Investigate QVAC's CPU path.** mudler's ggml patch has been ruled out by
-   ablation (§2), so the 1.79× CPU gap traces to either the ggml version
+   ablation (§3), so the 1.79× CPU gap traces to either the ggml version
    difference (0.10.2 vs 0.13.0) or QVAC's own engine-level CPU code. Bumping
    QVAC's ggml and re-measuring is the cheapest next probe.
 4. Fix the script modes (F1), publish the QVAC GGUF (F3), assert mudler's runtime
@@ -297,7 +297,7 @@ twice and read the second pass, so both engines report steady-state.
 
 ---
 
-## 7. Verification checklist
+## 8. Verification
 
 Every item from `instructions.md` §"Validation and handoff", for the matched
 Vulkan run:
@@ -310,7 +310,7 @@ Vulkan run:
 | No log contains `falling back to CPU` | Pass — grep control-validated † |
 | QVAC per-utterance backend labels match the request | Pass — all 300 report `ggml-vulkan0` |
 | Vulkan JSON has `meta.backendMatch: true` | Pass |
-| OpenCL diagnostic JSON has `meta.backendMatch: false` | N/A — run could not produce output (§3) |
+| OpenCL diagnostic JSON has `meta.backendMatch: false` | N/A — run could not produce output (§4) |
 | Model load and WAV read excluded from timings | Pass — `load_ms` 231.2 and `wav_read_ms` 0.46 are separate fields; `inference_ms` equals mel+encoder+decoder exactly |
 | `node fleurs-results.test.js` | Pass — *FLEURS aggregation and report tests passed* |
 
@@ -320,7 +320,7 @@ synthetic file, yet finds nothing in the run logs.
 
 ---
 
-## 8. Environment
+## 9. Environment
 
 | Item | Value |
 |---|---|
@@ -345,7 +345,7 @@ synthetic file, yet finds nothing in the run logs.
 
 ---
 
-## 9. Artifacts
+## 10. Artifacts
 
 ```
 artifacts/

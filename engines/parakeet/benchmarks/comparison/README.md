@@ -22,6 +22,8 @@ starting `proc_ms`, and then times `transcribe_pcm`. The harness therefore
 compares engine-only inference where each CLI supports it.
 
 Generated data and reports are written to the gitignored `out/` directory.
+Reviewed, committed results are normalized under
+[`reports/`](reports/README.md) by target and backend.
 Historical reports from June 18, 2026 remain on the obsolete monorepo ref
 `origin/tmp-parakeet-comparison` under
 `packages/transcription-parakeet/benchmarks/comparison/baseline/`; they are not
@@ -36,6 +38,11 @@ engines/parakeet/benchmarks/comparison/
   fleurs-results.js
   fleurs-results.test.js
   architecture.md
+  reports/                # committed platform reports and supplied raw data
+    <target>/
+      verification-report.md
+      fleurs-<backend>.md
+      fleurs-<backend>.json
   models/                 # gitignored
     qvac/                  # QVAC-schema q8_0 GGUFs
     mudler/                # mudler-schema q8_0 GGUFs
@@ -43,6 +50,11 @@ engines/parakeet/benchmarks/comparison/
 ```
 
 The legacy `qvac-bench.js` addon driver is intentionally not present.
+
+All platform verification reports use the same ten-section schema and the
+`reports/<target>/verification-report.md` naming convention. Raw FLEURS files
+are committed beside the verification report only when they were supplied with
+the handoff; missing NVIDIA and Android artifacts are not reconstructed.
 
 ## Build the QVAC engine CLI
 
