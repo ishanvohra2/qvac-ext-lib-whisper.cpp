@@ -804,13 +804,15 @@ static LmSampleParams make_lm_sample_params(const GenerateParams & params, long 
 }
 
 static bool needs_lm_phase_one(const GenerateParams & params, const AcePrompt & prompt) {
-    if (params.simple_mode) return true;
+    if (params.simple_mode || params.rewrite_query) return true;
     return params.lm_phase1 && !has_complete_metadata(prompt);
 }
 
-// Fields simple mode left empty for the LM must never stay empty past Phase 1:
-// downstream prompt building and metadata reporting rely on them.
-static void finalize_simple_mode_prompt(GenerationState & state) {
+// Fields the LM expansion (Inspire or Format) left empty must never stay
+// empty past Phase 1: downstream prompt building and metadata reporting rely
+// on them, and state.language must carry the LM-chosen language into
+// tokenize_prompt.
+static void finalize_lm_expanded_prompt(GenerationState & state) {
     if (state.prompt.lyrics.empty()) state.prompt.lyrics = INSTRUMENTAL_LYRICS;
     if (state.prompt.vocal_language.empty()) state.prompt.vocal_language = DEFAULT_VOCAL_LANGUAGE;
     state.language = state.prompt.vocal_language;
@@ -824,14 +826,19 @@ static bool run_lm_phase_one(EngineImpl & engine, const GenerateParams & params,
                              GenerationState & state, const LmSampleParams & sample) {
     LmSampleParams phase_one = sample;
     phase_one.max_new_tokens = 0;
-    if (lm_generate_phase1(engine.lm, engine.bpe_lm, state.prompt, phase_one,
-                           true, true, params.simple_mode)) {
-        if (params.simple_mode) finalize_simple_mode_prompt(state);
+    const LmPhase1Mode mode = params.simple_mode  ? LmPhase1Mode::Inspire
+                              : params.rewrite_query ? LmPhase1Mode::Format
+                                                     : LmPhase1Mode::Auto;
+    if (lm_generate_phase1(engine.lm, engine.bpe_lm, state.prompt, phase_one, true, true, mode)) {
+        if (params.simple_mode || params.rewrite_query) finalize_lm_expanded_prompt(state);
         return true;
     }
     if (engine.cancel_flag.load()) return false;
     if (params.simple_mode) {
         throw std::runtime_error("acestep engine: simple_mode LM expansion failed");
+    }
+    if (params.rewrite_query) {
+        throw std::runtime_error("acestep engine: rewrite_query LM formatting failed");
     }
     fprintf(stderr, "[acestep-engine] Phase 1 failed; falling back to provided/default metas\n");
     return true;
